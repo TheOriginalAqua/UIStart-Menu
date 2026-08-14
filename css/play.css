@@ -14,9 +14,16 @@
   transition: opacity 0.3s ease;
 }
 
+/* The carousel fades a little slower than the other screens, so the
+   fade and the ring settling underneath it finish closer together. */
+.subdivision-carousel-wrap {
+  transition: opacity 0.5s ease;
+}
+
 .brand.fade-hidden,
 .role-list-wrap.fade-hidden,
-.sub-role-list-wrap.fade-hidden {
+.sub-role-list-wrap.fade-hidden,
+.subdivision-carousel-wrap.fade-hidden {
   opacity: 0;
 }
 
@@ -338,6 +345,22 @@
   /* flatten the stack so scaled cards composite cleanly against
      each other instead of shimmering at the edges */
   transform-style: flat;
+  transition: transform 0.9s var(--carousel-ease);
+}
+
+/* Entrance. The cards are placed while the stage is still transparent,
+   so the ring arrives already formed; this settles the whole formation
+   in as one piece rather than animating sixteen cards individually,
+   which would fight the inline transforms JS writes to each of them.
+   The ring eases up and outward as the stage fades in. */
+.subdivision-track.is-entering {
+  transform: scale(0.88) translateY(calc(18 * var(--u)));
+}
+
+/* Applied for the frame the entrance pose is set, so it snaps into
+   place instead of animating backwards into it. */
+.subdivision-track.no-anim {
+  transition: none;
 }
 
 /* Base state = "can pick it, not picking it". The other two states
@@ -364,9 +387,16 @@
               border-color 0.4s ease,
               background 0.4s ease,
               box-shadow 0.4s ease;
-  will-change: transform, opacity;
-  backface-visibility: hidden;
 }
+
+/* will-change is deliberately NOT set here. Standing on every card it
+   pinned all sixteen onto their own compositor layers for the entire
+   life of the screen, under an ancestor that is also masked. A layer
+   whose opacity settles at 0 gets dropped and then re-rasterised the
+   next time it is touched, which is the flash on the card leaving the
+   edge. The browser promotes for the duration of a transition on its
+   own; the hint is only worth it while a drag is driving transforms
+   every frame, so it is scoped to that below. */
 
 /* Freeze a card and its title together mid-teleport. An inline
    `transition: none` reaches only the card, leaving the title
@@ -416,7 +446,6 @@
      re-wrapping mid-animation, same easing as the card. */
   transform: translate(-50%, -50%) scale(0.7);
   transform-origin: center center;
-  will-change: transform;
   transition: transform var(--carousel-duration) var(--carousel-ease),
               color 0.5s ease,
               opacity 0.5s ease;
@@ -432,7 +461,7 @@
                 color-mix(in srgb, var(--accent) 70%, transparent);
 }
 
-.subdivision-item.is-centre .subdivision-name {
+.subdivision-item.is-centre.active .subdivision-name {
   transform: translate(-50%, -50%) scale(1);
 }
 
@@ -475,7 +504,15 @@
 /* --- state 1: cards outside the chosen division --------------------
    One flat colour, whatever they're doing. They can't be picked, so
    they never change appearance — no hover, no centring, nothing that
-   would suggest otherwise. */
+   would suggest otherwise.
+
+   This holds however many of them there are, and wherever they sit in
+   the ring: every card on stage is painted at full opacity (see
+   ringOpacity in playerselect.js), so two muted cards at different
+   depths composite to the exact same grey rather than two shades of
+   it. Depth is carried by position and scale alone, and the fade in
+   and out happens entirely in the slots past the stage, behind the
+   mask below. */
 
 .subdivision-item.muted {
   background: var(--card-locked-bg);
@@ -552,13 +589,22 @@
   transition: none;
 }
 
+.subdivision-track-viewport.is-dragging .subdivision-item {
+  will-change: transform;
+}
+
 @media (prefers-reduced-motion: reduce) {
   :root {
     --carousel-duration: 0.01ms;
   }
 
   .subdivision-item,
-  .subdivision-item .subdivision-name {
+  .subdivision-item .subdivision-name,
+  .subdivision-track {
     transition-duration: 0.01ms;
+  }
+
+  .subdivision-track.is-entering {
+    transform: none;
   }
 }

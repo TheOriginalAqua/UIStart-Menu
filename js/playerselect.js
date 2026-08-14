@@ -98,6 +98,12 @@ function showMainMenu(event) {
   transitionScreens(roleSelect, mainMenu);
 }
 
+/* onSwap receives a `reveal` callback. The incoming screen is mounted
+   but still transparent when it runs, so anything that needs to measure
+   or position itself can do so unseen and call reveal() when it's
+   settled. Previously the fade-in was started first and onSwap ran
+   after, so the carousel was laying its cards out while the stage was
+   already fading up — you could watch them arrive mid-fade. */
 function fadeContentSwap(from, to, onSwap) {
   const fadeSelector = ".brand, .role-list-wrap, .sub-role-list-wrap, .subdivision-carousel-wrap";
   const fromContent = from.querySelectorAll(fadeSelector);
@@ -112,9 +118,16 @@ function fadeContentSwap(from, to, onSwap) {
     to.hidden = false;
     toContent.forEach((el) => el.classList.add("fade-hidden"));
     void to.offsetWidth;
-    toContent.forEach((el) => el.classList.remove("fade-hidden"));
 
-    if (onSwap) onSwap();
+    let revealed = false;
+    const reveal = () => {
+      if (revealed) return;
+      revealed = true;
+      toContent.forEach((el) => el.classList.remove("fade-hidden"));
+    };
+
+    if (onSwap) onSwap(reveal);
+    else reveal();
   };
 
   if (fromContent.length) {
@@ -166,11 +179,13 @@ function showRoleSelectFromSubRole(event) {
 
 const CAROUSEL = {
   visibleRings: 2,
+  /* Slots past the stage that a card fades across. The slot sits on the
+     same even spacing as every other one, so a card arrives by easing in
+     over one normal gap rather than flying in from off screen. */
+  fadeRings: 1,
   step: 1.02,
   scaleDecay: 0.8,
   gap: 0.07,
-  outerGap: 0.2,
-  opacityDecay: 0.72,
   anchorHysteresis: 0.65,
   flingMs: 130,
   maxFling: 2,
@@ -212,15 +227,22 @@ function carouselOffset(index, pos) {
 
 let slotTable = [0];
 
+/* Slots are evenly spaced all the way out, including the ones past the
+   stage. Earlier revisions pushed the outer slots clear of the viewport
+   so a third card could never be seen; that worked, but cards then had
+   to cross open space to reach the stage and appeared to fly in from
+   the sides. The outer slot now sits one ordinary gap beyond the last
+   visible one and is simply drawn at zero opacity, so nothing is on
+   screen that shouldn't be and arrivals are a fade over a short, even
+   step. */
 function buildSlotTable(maxRings) {
-  const { scaleDecay, gap, outerGap } = CAROUSEL;
+  const { scaleDecay, gap } = CAROUSEL;
   const table = [0];
 
   for (let ring = 1; ring <= maxRings; ring++) {
     const inner = Math.pow(scaleDecay, ring - 1);
     const outer = Math.pow(scaleDecay, ring);
-    const extra = ring === maxRings ? outerGap : 0;
-    table[ring] = table[ring - 1] + (inner + outer) / 2 + gap + extra;
+    table[ring] = table[ring - 1] + (inner + outer) / 2 + gap;
   }
   slotTable = table;
 }
@@ -236,17 +258,31 @@ function slotDistance(rings) {
 }
 
 
-function ringOpacity(rings, maxRings) {
-  const t = clamp(maxRings - rings, 0, 1);
-  const eased = t * t * (3 - 2 * t);
-  return Math.pow(CAROUSEL.opacityDecay, rings) * eased;
+/* Opacity is a visibility control, not a shading one.
+   Every card on stage is painted at 1 — a card two rings back is the
+   same colour as one at the centre, so a whole row of unselectable
+   cards reads as one flat grey instead of a gradient of greys.
+
+   The ramp lives entirely past the stage, so nothing visible is ever
+   half faded and no extra card shows at the edge. Because the outer
+   slot is one ordinary gap out, a card arriving crosses a short, even
+   step while it fades up, and leaves the same way — it eases in and
+   out near the edge rather than travelling in from off screen.
+
+   The smoothstep matters during a drag, where rings is fractional:
+   it flattens the ramp at both ends so a card doesn't start or stop
+   fading abruptly as it crosses the boundary. */
+function ringOpacity(rings, onStage, maxRings) {
+  const band = Math.max(maxRings - onStage, 1);
+  const t = clamp((maxRings - rings) / band, 0, 1);
+  return t * t * (3 - 2 * t);
 }
 
-function cardMetrics(rings, cardWidth, maxRings) {
+function cardMetrics(rings, cardWidth, onStage, maxRings) {
   return {
     distance: slotDistance(rings) * cardWidth,
     scale: Math.pow(CAROUSEL.scaleDecay, rings),
-    opacity: ringOpacity(rings, maxRings),
+    opacity: ringOpacity(rings, onStage, maxRings),
   };
 }
 
@@ -262,28 +298,32 @@ function writeCard(item, x, scale, opacity, zIndex) {
     item.style.opacity = alpha;
     item._opacity = alpha;
   }
-  const visibility = opacity <= 0.001 ? "hidden" : "visible";
-  if (item._visibility !== visibility) {
-    item.style.visibility = visibility;
-    item._visibility = visibility;
-  }
+  /* No visibility toggling. It is a discrete property, so it can only
+     ever snap: flipped early it cut the outgoing card off mid-fade, and
+     transitioned it had to be held `visible` for the full duration,
+     which left a card being animated and torn down at the same time —
+     the flash on the card that was disappearing. Opacity alone is
+     continuous and says everything needed; a card at 0 is invisible,
+     and pointer-events and tabIndex below already take it out of reach. */
   if (item._zIndex !== zIndex) {
     item.style.zIndex = String(zIndex);
     item._zIndex = zIndex;
   }
 }
 
+/* Returns false when the cards can't be measured yet — the caller
+   decides whether to retry. This used to schedule its own retry and
+   return silently, which meant the opening sequence could drop
+   is-dragging (and so re-enable transitions) before a single card had
+   been positioned. */
 function layoutCarousel(pos = carouselPos) {
-  if (!carouselItems.length) return;
+  if (!carouselItems.length) return true;
 
   const cardWidth = carouselItems[0].offsetWidth;
-  if (!cardWidth) {
-    if (!subdivisionSelect.hidden) requestAnimationFrame(() => layoutCarousel(pos));
-    return;
-  }
+  if (!cardWidth) return false;
   cardWidthCache = cardWidth;
 
-  const maxRings = carouselRings + 1;
+  const maxRings = carouselRings + CAROUSEL.fadeRings;
   if (slotTable.length !== maxRings + 1) buildSlotTable(maxRings);
   updateCarouselAnchor(pos);
   const centre = clampIndex(Math.round(pos));
@@ -293,23 +333,21 @@ function layoutCarousel(pos = carouselPos) {
     const direction = offset === 0 ? 0 : Math.sign(offset);
     const rings = Math.min(Math.abs(offset), maxRings);
 
-    const { distance, scale, opacity } = cardMetrics(rings, cardWidth, maxRings);
+    const { distance, scale, opacity } = cardMetrics(rings, cardWidth, carouselRings, maxRings);
     const x = direction * distance;
     const zIndex = Math.round(100 - rings * 10);
 
     const previous = item._offset;
     const jumped = previous !== undefined && Math.abs(offset - previous) > 1.5;
     if (jumped) {
-      const staged = cardMetrics(maxRings, cardWidth, maxRings);
+      const staged = cardMetrics(maxRings, cardWidth, carouselRings, maxRings);
       item.classList.add("no-anim");
       item.style.transform =
         `translate(-50%, -50%) translate3d(${(direction * staged.distance).toFixed(2)}px, 0, 0)` +
         ` scale(${staged.scale.toFixed(4)})`;
       item.style.opacity = "0";
-      item.style.visibility = "hidden";
       item._transform = null;
       item._opacity = null;
-      item._visibility = null;
       void item.offsetWidth;
       item.classList.remove("no-anim");
     }
@@ -330,6 +368,7 @@ function layoutCarousel(pos = carouselPos) {
   });
 
   updateCarouselArrows();
+  return true;
 }
 
 function settleCarousel(index) {
@@ -354,6 +393,40 @@ function updateCarouselArrows() {
   subdivisionArrowRight.disabled = carouselIndex >= carouselMax;
 }
 
+/* Position the ring for the first time, then hand control back.
+   Nothing is revealed until a layout has actually happened: while the
+   screen is mid-swap the cards can measure zero, and letting the
+   opening frame through in that state showed every card stacked at the
+   centre, fully opaque, before they slid apart — the flash of cards to
+   the left and right that then vanished. */
+function layoutCarouselWhenReady(reveal) {
+  if (subdivisionSelect.hidden) {
+    subdivisionViewport.classList.remove("is-dragging");
+    subdivisionTrack.classList.remove("no-anim", "is-entering");
+    if (reveal) reveal();
+    return;
+  }
+
+  if (!layoutCarousel()) {
+    requestAnimationFrame(() => layoutCarouselWhenReady(reveal));
+    return;
+  }
+
+  /* Placed, still transparent, still holding the entrance pose. Fade
+     the stage up as one piece. */
+  if (reveal) reveal();
+
+  requestAnimationFrame(() => {
+    subdivisionViewport.classList.remove("is-dragging");
+    subdivisionTrack.classList.remove("no-anim");
+
+    /* A frame later, so the track has its transition back before the
+       pose is released — otherwise both changes land in one style pass
+       and it snaps to place instead of settling. */
+    requestAnimationFrame(() => subdivisionTrack.classList.remove("is-entering"));
+  });
+}
+
 function showSubdivisionSelect(role, activeSubrole) {
   const divisions = subdivisionData[role];
   if (!divisions) return;
@@ -367,52 +440,79 @@ function showSubdivisionSelect(role, activeSubrole) {
   carouselMin = null;
   carouselMax = null;
 
+  /* Lay the whole tree out flat first, then rotate it so the division
+     you picked lands in the middle of the ring. Built in declaration
+     order, a division at either end of the tree opened with empty air
+     on one side and every other division stacked on the other. Rotating
+     is cyclic, so the chosen division stays contiguous and whatever
+     falls off one end reappears on the other — which is what puts a
+     different division on each side whichever one you click. */
+  const cards = [];
   Object.keys(divisions).forEach((subrole) => {
-    const isActiveGroup = subrole === activeSubrole;
-
     divisions[subrole].forEach((subdivision) => {
-      const link = document.createElement("a");
-      link.href = "#";
-      link.className = `subdivision-item ${isActiveGroup ? "active" : "muted"}`;
-      link.dataset.subrole = subrole;
-      link.dataset.subdivision = subdivision;
-
-      const groupLabel = document.createElement("span");
-      groupLabel.className = "subdivision-group-label";
-      groupLabel.textContent = subrole;
-      link.appendChild(groupLabel);
-
-      const name = document.createElement("span");
-      name.className = "subdivision-name";
-      name.textContent = subdivision;
-      link.appendChild(name);
-
-      const hint = document.createElement("span");
-      hint.className = "subdivision-hint";
-      hint.textContent = "Select";
-      link.appendChild(hint);
-
-      const index = carouselItems.length;
-      if (isActiveGroup) {
-        if (carouselMin === null) carouselMin = index;
-        carouselMax = index;
-      }
-
-      link.addEventListener("click", (event) => {
-        event.preventDefault();
-        if (dragState && dragState.moved) return;
-        if (!isActiveGroup) return;
-
-        if (index !== carouselIndex) {
-          rotateCarouselTo(index);
-          return;
-        }
-        spawnPlayer(role, subrole, subdivision);
-      });
-
-      carouselItems.push(link);
-      subdivisionTrack.appendChild(link);
+      cards.push({ subrole, subdivision, isActiveGroup: subrole === activeSubrole });
     });
+  });
+
+  const activeAt = cards.reduce(
+    (acc, card, i) => (card.isActiveGroup ? { first: acc.first === null ? i : acc.first, last: i } : acc),
+    { first: null, last: null }
+  );
+
+  let ordered = cards;
+  if (activeAt.first !== null && cards.length > 1) {
+    const activeCentre = Math.floor((activeAt.first + activeAt.last) / 2);
+    const ringCentre = Math.floor((cards.length - 1) / 2);
+    const shift = (((activeCentre - ringCentre) % cards.length) + cards.length) % cards.length;
+    ordered = cards.slice(shift).concat(cards.slice(0, shift));
+  }
+
+  ordered.forEach(({ subrole, subdivision, isActiveGroup }) => {
+    const link = document.createElement("a");
+    link.href = "#";
+    link.className = `subdivision-item ${isActiveGroup ? "active" : "muted"}`;
+    /* A card with no inline styles yet sits at the track's centre at
+       full opacity. Born hidden instead, so the only thing that can
+       ever paint it is a layout pass that knows where it goes. */
+    link.style.opacity = "0";
+    link.dataset.subrole = subrole;
+    link.dataset.subdivision = subdivision;
+
+    const groupLabel = document.createElement("span");
+    groupLabel.className = "subdivision-group-label";
+    groupLabel.textContent = subrole;
+    link.appendChild(groupLabel);
+
+    const name = document.createElement("span");
+    name.className = "subdivision-name";
+    name.textContent = subdivision;
+    link.appendChild(name);
+
+    const hint = document.createElement("span");
+    hint.className = "subdivision-hint";
+    hint.textContent = "Select";
+    link.appendChild(hint);
+
+    const index = carouselItems.length;
+    if (isActiveGroup) {
+      if (carouselMin === null) carouselMin = index;
+      carouselMax = index;
+    }
+
+    link.addEventListener("click", (event) => {
+      event.preventDefault();
+      if (dragState && dragState.moved) return;
+      if (!isActiveGroup) return;
+
+      if (index !== carouselIndex) {
+        rotateCarouselTo(index);
+        return;
+      }
+      spawnPlayer(role, subrole, subdivision);
+    });
+
+    carouselItems.push(link);
+    subdivisionTrack.appendChild(link);
   });
 
   if (carouselMin === null) {
@@ -425,16 +525,20 @@ function showSubdivisionSelect(role, activeSubrole) {
   carouselAnchor = carouselIndex;
 
   const total = carouselItems.length;
-  carouselWraps = total >= 3;
   carouselRings = Math.min(CAROUSEL.visibleRings, Math.floor((total - 1) / 2));
-  buildSlotTable(carouselRings + 1);
+  const maxRings = carouselRings + CAROUSEL.fadeRings;
+  /* Wrapping is what makes a card teleport from one edge of the ring
+     to the other. That jump is only invisible if the card has already
+     faded out by the time it happens, so wrap only when the boundary
+     sits past the end of the fade band. Below that count the ring is
+     short enough that the far cards simply park off-stage instead. */
+  carouselWraps = total >= 2 * (maxRings + 1);
+  buildSlotTable(maxRings);
 
-  fadeContentSwap(subRoleSelect, subdivisionSelect, () => {
+  fadeContentSwap(subRoleSelect, subdivisionSelect, (reveal) => {
     subdivisionViewport.classList.add("is-dragging");
-    layoutCarousel();
-    requestAnimationFrame(() =>
-      subdivisionViewport.classList.remove("is-dragging")
-    );
+    subdivisionTrack.classList.add("no-anim", "is-entering");
+    layoutCarouselWhenReady(reveal);
   });
 }
 
