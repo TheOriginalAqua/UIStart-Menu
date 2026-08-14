@@ -183,6 +183,14 @@ const CAROUSEL = {
      same even spacing as every other one, so a card arrives by easing in
      over one normal gap rather than flying in from off screen. */
   fadeRings: 1,
+  /* Slots kept beyond the fade band. Without them every card past the
+     band clamped to one position, so a card still fading out and the
+     ones already parked behind it drew on the exact same pixels —
+     scroll again before a fade finished and you saw both at once, as a
+     doubled, ghosted card. They now carry on outward instead, staying
+     clear of each other for the whole fade. They are at zero opacity
+     throughout; this only decides where they sit while they get there. */
+  tailRings: 3,
   step: 1.02,
   scaleDecay: 0.8,
   gap: 0.07,
@@ -338,14 +346,17 @@ function layoutCarousel(pos = carouselPos) {
   cardWidthCache = cardWidth;
 
   const maxRings = carouselRings + CAROUSEL.fadeRings;
-  if (slotTable.length !== maxRings + 1) buildSlotTable(maxRings);
+  /* Positions run out to tailRings; opacity still finishes at maxRings,
+     so the extra slots are purely somewhere for invisible cards to be. */
+  const tailRings = maxRings + CAROUSEL.tailRings;
+  if (slotTable.length !== tailRings + 1) buildSlotTable(tailRings);
   updateCarouselAnchor(pos);
   const centre = clampIndex(Math.round(pos));
 
   carouselItems.forEach((item, index) => {
     const offset = carouselOffset(index, pos);
     const direction = offset === 0 ? 0 : Math.sign(offset);
-    const rings = Math.min(Math.abs(offset), maxRings);
+    const rings = Math.min(Math.abs(offset), tailRings);
 
     const { distance, scale, opacity } = cardMetrics(rings, cardWidth, carouselRings, maxRings);
     const x = direction * distance;
@@ -354,7 +365,7 @@ function layoutCarousel(pos = carouselPos) {
     const previous = item._offset;
     const jumped = previous !== undefined && Math.abs(offset - previous) > 1.5;
     if (jumped) {
-      const staged = cardMetrics(maxRings, cardWidth, carouselRings, maxRings);
+      const staged = cardMetrics(tailRings, cardWidth, carouselRings, maxRings);
       item.classList.add("no-anim");
       item.style.transform =
         `translate(-50%, -50%) translate3d(${(direction * staged.distance).toFixed(2)}px, 0, 0)` +
@@ -550,7 +561,7 @@ function showSubdivisionSelect(role, activeSubrole) {
      sits past the end of the fade band. Below that count the ring is
      short enough that the far cards simply park off-stage instead. */
   carouselWraps = total >= 2 * (maxRings + 1);
-  buildSlotTable(maxRings);
+  buildSlotTable(maxRings + CAROUSEL.tailRings);
 
   fadeContentSwap(subRoleSelect, subdivisionSelect, (reveal) => {
     subdivisionViewport.classList.add("is-dragging");
