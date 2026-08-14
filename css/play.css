@@ -1,5 +1,9 @@
-/* All sizes are multiples of --u (defined in main.css) so every screen
-   is identical at 1440p, 1080p and anything else — see the note there. */
+.role-item[data-role="police"]    { --accent: #3498db; }
+.role-item[data-role="ambulance"] { --accent: #11806a; }
+.role-item[data-role="fire"]      { --accent: #e74c3c; }
+.role-item[data-role="auxiliary"] { --accent: #f1c40f; }
+.role-item[data-role="civilian"]  { --accent: #e67e22; }
+.role-item[data-role="flight"]    { --accent: #e67e22; }
 
 .subdivision-track[data-role="police"]    { --accent: #3498db; }
 .subdivision-track[data-role="ambulance"] { --accent: #11806a; }
@@ -14,8 +18,6 @@
   transition: opacity 0.3s ease;
 }
 
-/* The carousel fades a little slower than the other screens, so the
-   fade and the ring settling underneath it finish closer together. */
 .subdivision-carousel-wrap {
   transition: opacity 0.5s ease;
 }
@@ -26,10 +28,6 @@
 .subdivision-carousel-wrap.fade-hidden {
   opacity: 0;
 }
-
-/* =================================================================
-   ROLE SELECT
-   ================================================================= */
 
 #role-select {
   display: flex;
@@ -142,17 +140,6 @@
   opacity: 0.4;
 }
 
-.role-item[data-role="police"]    { --accent: #3498db; }
-.role-item[data-role="ambulance"] { --accent: #11806a; }
-.role-item[data-role="fire"]      { --accent: #e74c3c; }
-.role-item[data-role="auxiliary"] { --accent: #f1c40f; }
-.role-item[data-role="civilian"]  { --accent: #e67e22; }
-.role-item[data-role="flight"]    { --accent: #e67e22; }
-
-/* =================================================================
-   DIVISION SELECT
-   ================================================================= */
-
 #sub-role-select {
   display: flex;
   flex-direction: column;
@@ -247,60 +234,17 @@
 .sub-role-list[data-role="civilian"]  { --accent: #e67e22; }
 .sub-role-list[data-role="flight"]    { --accent: #e67e22; }
 
-/* =================================================================
-   SUBDIVISION SCREEN — rotating carousel
-
-   Every subdivision in the tree is drawn, so the whole tree stays on
-   screen, but rotation is bounded to the division you picked.
-
-   A card is in exactly one of three states, and each state has one
-   fixed colour that never changes while the ring moves:
-
-     .muted             outside your division — can't be picked
-     .active            in your division, not centred — can be picked
-     .active.is-centre  centred — the one you'd select, in the accent
-
-   Colour is never computed from distance. Earlier revisions shaded
-   each card by how far back it sat, which meant the same card was a
-   different colour mid-rotation than at rest, and translucent cards
-   blended with the ones behind them so a grey depended on what it was
-   sitting over. Depth is now carried by position and scale only.
-   Opacity fades nothing on stage — it exists solely to fade the
-   off-stage slot at the very edges, which is behind everything and
-   under the viewport mask.
-   ================================================================= */
-
 :root {
-  /* one easing for every card motion, so nothing in the ring drifts
-     out of step with anything else */
   --carousel-ease: cubic-bezier(0.22, 0.9, 0.24, 1);
   --carousel-duration: 0.72s;
-  /* The fade runs for exactly as long as the movement, so a card's
-     travel and its brightness begin and end together as one gesture.
-     Running it shorter left the opacity finishing while the card was
-     still sliding, which read as the animation stopping early. */
   --carousel-fade: var(--carousel-duration);
-
-  /* Symmetric ease, deliberately not the movement curve and not linear.
-     The movement curve is heavily front-loaded — 69% within its first
-     100ms — so on opacity a card slams to two-thirds visible before it
-     has gone anywhere. Linear fixes that but starts and stops at full
-     rate, and those two kinks are themselves visible as a hard start
-     and a hard cut. This eases in and out while still crossing halfway
-     at the halfway point, so it neither jumps nor snaps. */
   --carousel-fade-ease: cubic-bezier(0.4, 0, 0.6, 1);
-
-  /* can't pick it */
   --card-locked-bg: #1a1a1f;
   --card-locked-line: #2a2a30;
   --card-locked-text: #63636b;
-
-  /* can pick it, not picking it */
   --card-idle-bg: #232328;
   --card-idle-line: #3a3a40;
   --card-idle-text: #b9b9c2;
-
-  /* picking it — border, title and glow come from --accent */
   --card-centre-bg: #26262c;
   --card-centre-hover-bg: #2a2a31;
 }
@@ -335,7 +279,6 @@
   min-height: 0;
 }
 
-/* Stage: wide enough to hold the fully receded cards on both sides. */
 .subdivision-track-viewport {
   position: relative;
   overflow: hidden;
@@ -356,29 +299,18 @@
   position: relative;
   width: 100%;
   height: 100%;
-  /* flatten the stack so scaled cards composite cleanly against
-     each other instead of shimmering at the edges */
   transform-style: flat;
   transition: transform 0.9s var(--carousel-ease);
 }
 
-/* Entrance. The cards are placed while the stage is still transparent,
-   so the ring arrives already formed; this settles the whole formation
-   in as one piece rather than animating sixteen cards individually,
-   which would fight the inline transforms JS writes to each of them.
-   The ring eases up and outward as the stage fades in. */
 .subdivision-track.is-entering {
   transform: scale(0.88) translateY(calc(18 * var(--u)));
 }
 
-/* Applied for the frame the entrance pose is set, so it snaps into
-   place instead of animating backwards into it. */
 .subdivision-track.no-anim {
   transition: none;
 }
 
-/* Base state = "can pick it, not picking it". The other two states
-   override the three colour properties and nothing else. */
 .subdivision-item {
   position: absolute;
   top: 50%;
@@ -394,7 +326,6 @@
   text-decoration: none;
   overflow: hidden;
   transform-origin: center center;
-  /* JS writes transform / opacity / z-index; everything eases from here */
   transform: translate(-50%, -50%);
   transition: transform var(--carousel-duration) var(--carousel-ease),
               opacity var(--carousel-fade) var(--carousel-fade-ease),
@@ -403,18 +334,6 @@
               box-shadow 0.4s ease;
 }
 
-/* A card whose target opacity is zero. visibility flips with a zero
-   duration, delayed by exactly the length of the fade — so the card
-   stays paintable right through the fade and then leaves the pipeline
-   outright at the end, once it is already invisible. Nothing can
-   repaint it after that.
-
-   Note this is a delayed flip, not an animation. Transitioning
-   visibility across the duration (an earlier attempt here) keeps the
-   property in-transition the whole time, which left the card being
-   animated and torn down at once. Removing the class takes the delay
-   with it, so a card coming back is paintable immediately and its
-   fade-in is seen from the first frame. */
 .subdivision-item.is-gone {
   visibility: hidden;
   transition: transform var(--carousel-duration) var(--carousel-ease),
@@ -425,21 +344,9 @@
               visibility 0s linear var(--carousel-fade);
 }
 
-/* will-change is deliberately NOT set here. Standing on every card it
-   pinned all sixteen onto their own compositor layers for the entire
-   life of the screen, under an ancestor that is also masked. A layer
-   whose opacity settles at 0 gets dropped and then re-rasterised the
-   next time it is touched, which is the flash on the card leaving the
-   edge. The browser promotes for the duration of a transition on its
-   own; the hint is only worth it while a drag is driving transforms
-   every frame, so it is scoped to that below. */
-
-/* Freeze a card and its title together mid-teleport. An inline
-   `transition: none` reaches only the card, leaving the title
-   animating through the jump. */
 .subdivision-item.no-anim,
 .subdivision-item.no-anim.is-gone,
-.subdivision-item.no-anim .subdivision-name {
+.ubdivision-item.no-anim .subdivision-name {
   transition: none;
 }
 
@@ -465,12 +372,6 @@
   width: calc(228 * var(--u));
   font-family: 'Oswald', sans-serif;
   font-weight: 600;
-  /* Authored at the CENTRED size and scaled DOWN for cards behind,
-     never up. Scaling up leaves the layout box at its original width
-     while painting it larger, so a long title overflowed the card and
-     got clipped by `overflow: hidden` — the missing first letter.
-     Scaling down cannot overflow, and line breaks are measured once,
-     at the size the centred card actually reads at. */
   font-size: calc(27 * var(--u));
   line-height: 1.25;
   letter-spacing: calc(2.5 * var(--u));
@@ -478,17 +379,12 @@
   text-align: center;
   text-wrap: balance;
   color: var(--card-idle-text);
-  /* names read upright on every card — no rotation, centred or not.
-     Transform rather than font-size: no per-frame text relayout, no
-     re-wrapping mid-animation, same easing as the card. */
   transform: translate(-50%, -50%) scale(0.7);
   transform-origin: center center;
   transition: transform var(--carousel-duration) var(--carousel-ease),
               color 0.5s ease,
               opacity 0.5s ease;
 }
-
-/* --- state 3: the centred card ------------------------------------ */
 
 .subdivision-item.is-centre.active {
   background: var(--card-centre-bg);
@@ -538,19 +434,6 @@
   background: var(--card-centre-hover-bg);
 }
 
-/* --- state 1: cards outside the chosen division --------------------
-   One flat colour, whatever they're doing. They can't be picked, so
-   they never change appearance — no hover, no centring, nothing that
-   would suggest otherwise.
-
-   This holds however many of them there are, and wherever they sit in
-   the ring: every card on stage is painted at full opacity (see
-   ringOpacity in playerselect.js), so two muted cards at different
-   depths composite to the exact same grey rather than two shades of
-   it. Depth is carried by position and scale alone, and the fade in
-   and out happens entirely in the slots past the stage, behind the
-   mask below. */
-
 .subdivision-item.muted {
   background: var(--card-locked-bg);
   border-color: var(--card-locked-line);
@@ -565,8 +448,6 @@
   color: var(--card-locked-text);
   opacity: 0.6;
 }
-
-/* --- arrows ------------------------------------------------------- */
 
 .carousel-arrow {
   flex: 0 0 auto;
@@ -612,10 +493,6 @@
   cursor: default;
   transform: none;
 }
-
-/* --- drag state ---------------------------------------------------
-   Transitions are off while a finger is down: JS drives every frame
-   directly, so the ring tracks the cursor with no lag behind it. */
 
 .subdivision-track-viewport.is-dragging {
   cursor: grabbing;

@@ -1,18 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Rajdhani:wght@400;500;600&display=swap');
 
-/* =================================================================
-   SCALE UNIT
-   The whole interface is authored against a 2560 x 1440 canvas and
-   every size is written as a multiple of --u. --u is 1px on that
-   canvas and shrinks proportionally on smaller viewports, so 1080p
-   is the exact same layout at 75% size — nothing reflows.
-
-   If your desktop runs OS display scaling (125%, 150%), your browser
-   reports a smaller CSS viewport than 2560. Set the canvas numbers
-   below to the width/height Chrome reports for window.innerWidth /
-   innerHeight and the design will match what you see today.
-   ================================================================= */
-
 :root {
   --u: min(100vw / 2560, 100vh / 1440);
 
@@ -23,8 +10,6 @@
   --colour-locked: #1a1a1f;
 }
 
-/* Phones and small windows get their own canvas, otherwise the UI
-   would scale down to unreadable. Same layout, mobile-sized. */
 @media (max-width: 900px) {
   :root {
     --u: min(100vw / 900, 100vh / 1500);
@@ -213,8 +198,6 @@ nav.menu {
   transition: color 0.3s ease, transform 0.3s ease;
 }
 
-/* SVGs carry hard-coded width/height attributes in the markup —
-   override them so icons scale with everything else. */
 .back-btn svg {
   width: calc(14 * var(--u));
   height: calc(14 * var(--u));
