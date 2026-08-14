@@ -294,17 +294,31 @@ function writeCard(item, x, scale, opacity, zIndex) {
     item._transform = transform;
   }
   const alpha = opacity.toFixed(3);
+  const gone = opacity <= 0.001;
+
+  /* Cleared BEFORE the opacity write, set AFTER it. A card coming back
+     has to be paintable in the same style pass that starts its fade-in,
+     or the opening frames of the fade are never drawn. */
+  if (!gone && item._gone !== false) {
+    item.classList.remove("is-gone");
+    item._gone = false;
+  }
+
   if (item._opacity !== alpha) {
     item.style.opacity = alpha;
     item._opacity = alpha;
   }
-  /* No visibility toggling. It is a discrete property, so it can only
-     ever snap: flipped early it cut the outgoing card off mid-fade, and
-     transitioned it had to be held `visible` for the full duration,
-     which left a card being animated and torn down at the same time —
-     the flash on the card that was disappearing. Opacity alone is
-     continuous and says everything needed; a card at 0 is invisible,
-     and pointer-events and tabIndex below already take it out of reach. */
+
+  if (gone && item._gone !== true) {
+    item.classList.add("is-gone");
+    item._gone = true;
+  }
+
+  /* Nothing writes visibility inline. is-gone hides the card with a
+     delayed, zero-duration flip once the fade has finished; doing it
+     from here would either cut the fade short or need animating, and
+     both have been tried. pointer-events and tabIndex below already
+     take an invisible card out of reach. */
   if (item._zIndex !== zIndex) {
     item.style.zIndex = String(zIndex);
     item._zIndex = zIndex;
@@ -346,8 +360,10 @@ function layoutCarousel(pos = carouselPos) {
         `translate(-50%, -50%) translate3d(${(direction * staged.distance).toFixed(2)}px, 0, 0)` +
         ` scale(${staged.scale.toFixed(4)})`;
       item.style.opacity = "0";
+      item.classList.add("is-gone");
       item._transform = null;
       item._opacity = null;
+      item._gone = true;
       void item.offsetWidth;
       item.classList.remove("no-anim");
     }
@@ -470,11 +486,12 @@ function showSubdivisionSelect(role, activeSubrole) {
   ordered.forEach(({ subrole, subdivision, isActiveGroup }) => {
     const link = document.createElement("a");
     link.href = "#";
-    link.className = `subdivision-item ${isActiveGroup ? "active" : "muted"}`;
+    link.className = `subdivision-item is-gone ${isActiveGroup ? "active" : "muted"}`;
     /* A card with no inline styles yet sits at the track's centre at
        full opacity. Born hidden instead, so the only thing that can
        ever paint it is a layout pass that knows where it goes. */
     link.style.opacity = "0";
+    link._gone = true;
     link.dataset.subrole = subrole;
     link.dataset.subdivision = subdivision;
 

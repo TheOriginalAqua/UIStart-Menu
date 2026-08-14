@@ -275,6 +275,20 @@
      out of step with anything else */
   --carousel-ease: cubic-bezier(0.22, 0.9, 0.24, 1);
   --carousel-duration: 0.72s;
+  /* The fade runs for exactly as long as the movement, so a card's
+     travel and its brightness begin and end together as one gesture.
+     Running it shorter left the opacity finishing while the card was
+     still sliding, which read as the animation stopping early. */
+  --carousel-fade: var(--carousel-duration);
+
+  /* Symmetric ease, deliberately not the movement curve and not linear.
+     The movement curve is heavily front-loaded — 69% within its first
+     100ms — so on opacity a card slams to two-thirds visible before it
+     has gone anywhere. Linear fixes that but starts and stops at full
+     rate, and those two kinks are themselves visible as a hard start
+     and a hard cut. This eases in and out while still crossing halfway
+     at the halfway point, so it neither jumps nor snaps. */
+  --carousel-fade-ease: cubic-bezier(0.4, 0, 0.6, 1);
 
   /* can't pick it */
   --card-locked-bg: #1a1a1f;
@@ -383,10 +397,32 @@
   /* JS writes transform / opacity / z-index; everything eases from here */
   transform: translate(-50%, -50%);
   transition: transform var(--carousel-duration) var(--carousel-ease),
-              opacity var(--carousel-duration) var(--carousel-ease),
+              opacity var(--carousel-fade) var(--carousel-fade-ease),
               border-color 0.4s ease,
               background 0.4s ease,
               box-shadow 0.4s ease;
+}
+
+/* A card whose target opacity is zero. visibility flips with a zero
+   duration, delayed by exactly the length of the fade — so the card
+   stays paintable right through the fade and then leaves the pipeline
+   outright at the end, once it is already invisible. Nothing can
+   repaint it after that.
+
+   Note this is a delayed flip, not an animation. Transitioning
+   visibility across the duration (an earlier attempt here) keeps the
+   property in-transition the whole time, which left the card being
+   animated and torn down at once. Removing the class takes the delay
+   with it, so a card coming back is paintable immediately and its
+   fade-in is seen from the first frame. */
+.subdivision-item.is-gone {
+  visibility: hidden;
+  transition: transform var(--carousel-duration) var(--carousel-ease),
+              opacity var(--carousel-fade) var(--carousel-fade-ease),
+              border-color 0.4s ease,
+              background 0.4s ease,
+              box-shadow 0.4s ease,
+              visibility 0s linear var(--carousel-fade);
 }
 
 /* will-change is deliberately NOT set here. Standing on every card it
@@ -402,6 +438,7 @@
    `transition: none` reaches only the card, leaving the title
    animating through the jump. */
 .subdivision-item.no-anim,
+.subdivision-item.no-anim.is-gone,
 .subdivision-item.no-anim .subdivision-name {
   transition: none;
 }
@@ -585,6 +622,7 @@
 }
 
 .subdivision-track-viewport.is-dragging .subdivision-item,
+.subdivision-track-viewport.is-dragging .subdivision-item.is-gone,
 .subdivision-track-viewport.is-dragging .subdivision-name {
   transition: none;
 }
@@ -596,6 +634,7 @@
 @media (prefers-reduced-motion: reduce) {
   :root {
     --carousel-duration: 0.01ms;
+    --carousel-fade: 0.01ms;
   }
 
   .subdivision-item,
