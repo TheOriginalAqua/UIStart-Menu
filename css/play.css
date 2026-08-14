@@ -1,0 +1,564 @@
+/* All sizes are multiples of --u (defined in main.css) so every screen
+   is identical at 1440p, 1080p and anything else — see the note there. */
+
+.subdivision-track[data-role="police"]    { --accent: #3498db; }
+.subdivision-track[data-role="ambulance"] { --accent: #11806a; }
+.subdivision-track[data-role="fire"]      { --accent: #e74c3c; }
+.subdivision-track[data-role="auxiliary"] { --accent: #f1c40f; }
+.subdivision-track[data-role="civilian"]  { --accent: #e67e22; }
+.subdivision-track[data-role="flight"]    { --accent: #e67e22; }
+
+.brand,
+.role-list-wrap,
+.sub-role-list-wrap {
+  transition: opacity 0.3s ease;
+}
+
+.brand.fade-hidden,
+.role-list-wrap.fade-hidden,
+.sub-role-list-wrap.fade-hidden {
+  opacity: 0;
+}
+
+/* =================================================================
+   ROLE SELECT
+   ================================================================= */
+
+#role-select {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  height: 100vh;
+  padding-top: calc(58 * var(--u));
+  text-align: center;
+}
+
+#role-select[hidden],
+#sub-role-select[hidden] {
+  display: none;
+}
+
+#role-select .brand {
+  flex: 0 0 auto;
+  margin-bottom: 0;
+}
+
+.role-list-wrap {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(14 * var(--u)) 0 calc(43 * var(--u));
+}
+
+.role-list {
+  display: flex;
+  flex-direction: row;
+  gap: calc(24 * var(--u));
+  width: 92vw;
+  max-width: calc(1700 * var(--u));
+  height: 100%;
+  max-height: calc(860 * var(--u));
+}
+
+.role-item {
+  --accent: var(--colour-tertiary);
+  flex: 1 1 0;
+  min-width: 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--colour-line);
+  border-radius: calc(16 * var(--u));
+  background: #232328;
+  text-decoration: none;
+  overflow: hidden;
+  transition: flex-grow 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.5s ease,
+              background 0.5s ease;
+}
+
+.role-item .role-name {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 600;
+  font-size: calc(22 * var(--u));
+  letter-spacing: calc(3 * var(--u));
+  text-transform: uppercase;
+  color: var(--colour-text);
+  white-space: nowrap;
+  transform: translate(-50%, -50%) rotate(-90deg);
+  transition: color 0.5s ease, filter 0.5s ease, opacity 0.5s ease,
+              font-size 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.role-item .role-lock {
+  display: none;
+}
+
+.role-item.unlocked:hover,
+.role-item.unlocked:focus-visible {
+  flex-grow: 3.4;
+  border-color: var(--accent);
+  background: #26262c;
+}
+
+.role-item.unlocked:hover .role-name,
+.role-item.unlocked:focus-visible .role-name {
+  color: var(--accent);
+  font-size: calc(32 * var(--u));
+  transform: translate(-50%, -50%) rotate(0deg);
+}
+
+.role-list:has(.role-item.unlocked:hover) .role-item:not(:hover) {
+  flex-grow: 0.55;
+}
+
+.role-list:has(.role-item.unlocked:hover) .role-item.unlocked:not(:hover) .role-name {
+  opacity: 0.6;
+}
+
+.role-item.locked {
+  background: var(--colour-locked);
+  border-color: var(--colour-line);
+  cursor: not-allowed;
+}
+
+.role-item.locked .role-name {
+  color: var(--colour-tertiary);
+  opacity: 0.4;
+}
+
+.role-item[data-role="police"]    { --accent: #3498db; }
+.role-item[data-role="ambulance"] { --accent: #11806a; }
+.role-item[data-role="fire"]      { --accent: #e74c3c; }
+.role-item[data-role="auxiliary"] { --accent: #f1c40f; }
+.role-item[data-role="civilian"]  { --accent: #e67e22; }
+.role-item[data-role="flight"]    { --accent: #e67e22; }
+
+/* =================================================================
+   DIVISION SELECT
+   ================================================================= */
+
+#sub-role-select {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  height: 100vh;
+  padding-top: calc(58 * var(--u));
+  text-align: center;
+}
+
+#sub-role-select .brand {
+  flex: 0 0 auto;
+  margin-bottom: 0;
+}
+
+.sub-role-list-wrap {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(14 * var(--u)) 0 calc(43 * var(--u));
+}
+
+.sub-role-list {
+  --accent: var(--colour-tertiary);
+  display: flex;
+  flex-direction: row;
+  gap: calc(24 * var(--u));
+  width: 92vw;
+  max-width: calc(1700 * var(--u));
+  height: 100%;
+  max-height: calc(860 * var(--u));
+}
+
+.sub-role-item {
+  flex: 1 1 0;
+  min-width: 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--colour-line);
+  border-radius: calc(16 * var(--u));
+  background: #232328;
+  text-decoration: none;
+  overflow: hidden;
+  transition: flex-grow 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.5s ease,
+              background 0.5s ease;
+}
+
+.sub-role-item .sub-role-name {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 600;
+  font-size: calc(22 * var(--u));
+  letter-spacing: calc(3 * var(--u));
+  text-transform: uppercase;
+  color: var(--colour-text);
+  white-space: nowrap;
+  transform: translate(-50%, -50%) rotate(-90deg);
+  transition: color 0.5s ease, filter 0.5s ease, opacity 0.5s ease,
+              font-size 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sub-role-item:hover,
+.sub-role-item:focus-visible {
+  flex-grow: 3.4;
+  border-color: var(--accent);
+  background: #26262c;
+}
+
+.sub-role-item:hover .sub-role-name,
+.sub-role-item:focus-visible .sub-role-name {
+  color: var(--accent);
+  font-size: calc(32 * var(--u));
+  transform: translate(-50%, -50%) rotate(0deg);
+}
+
+.sub-role-list:has(.sub-role-item:hover) .sub-role-item:not(:hover) {
+  flex-grow: 0.55;
+}
+
+.sub-role-list[data-role="police"]    { --accent: #3498db; }
+.sub-role-list[data-role="ambulance"] { --accent: #11806a; }
+.sub-role-list[data-role="fire"]      { --accent: #e74c3c; }
+.sub-role-list[data-role="auxiliary"] { --accent: #f1c40f; }
+.sub-role-list[data-role="civilian"]  { --accent: #e67e22; }
+.sub-role-list[data-role="flight"]    { --accent: #e67e22; }
+
+/* =================================================================
+   SUBDIVISION SCREEN — rotating carousel
+
+   Every subdivision in the tree is drawn, so the whole tree stays on
+   screen, but rotation is bounded to the division you picked.
+
+   A card is in exactly one of three states, and each state has one
+   fixed colour that never changes while the ring moves:
+
+     .muted             outside your division — can't be picked
+     .active            in your division, not centred — can be picked
+     .active.is-centre  centred — the one you'd select, in the accent
+
+   Colour is never computed from distance. Earlier revisions shaded
+   each card by how far back it sat, which meant the same card was a
+   different colour mid-rotation than at rest, and translucent cards
+   blended with the ones behind them so a grey depended on what it was
+   sitting over. Depth is now carried by position and scale only.
+   Opacity fades nothing on stage — it exists solely to fade the
+   off-stage slot at the very edges, which is behind everything and
+   under the viewport mask.
+   ================================================================= */
+
+:root {
+  /* one easing for every card motion, so nothing in the ring drifts
+     out of step with anything else */
+  --carousel-ease: cubic-bezier(0.22, 0.9, 0.24, 1);
+  --carousel-duration: 0.72s;
+
+  /* can't pick it */
+  --card-locked-bg: #1a1a1f;
+  --card-locked-line: #2a2a30;
+  --card-locked-text: #63636b;
+
+  /* can pick it, not picking it */
+  --card-idle-bg: #232328;
+  --card-idle-line: #3a3a40;
+  --card-idle-text: #b9b9c2;
+
+  /* picking it — border, title and glow come from --accent */
+  --card-centre-bg: #26262c;
+  --card-centre-hover-bg: #2a2a31;
+}
+
+#subdivision-select {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  height: 100vh;
+  padding-top: calc(58 * var(--u));
+  text-align: center;
+}
+
+#subdivision-select[hidden] {
+  display: none;
+}
+
+#subdivision-select .brand {
+  flex: 0 0 auto;
+  margin-bottom: 0;
+}
+
+.subdivision-carousel-wrap {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(6 * var(--u));
+  padding: calc(14 * var(--u)) 0 calc(43 * var(--u));
+  min-height: 0;
+}
+
+/* Stage: wide enough to hold the fully receded cards on both sides. */
+.subdivision-track-viewport {
+  position: relative;
+  overflow: hidden;
+  width: 92vw;
+  max-width: calc(1700 * var(--u));
+  height: 100%;
+  max-height: calc(860 * var(--u));
+  cursor: grab;
+  touch-action: pan-y;
+  -webkit-mask-image: linear-gradient(to right,
+      transparent 0, #000 12%, #000 88%, transparent 100%);
+  mask-image: linear-gradient(to right,
+      transparent 0, #000 12%, #000 88%, transparent 100%);
+}
+
+.subdivision-track {
+  --accent: var(--colour-tertiary);
+  position: relative;
+  width: 100%;
+  height: 100%;
+  /* flatten the stack so scaled cards composite cleanly against
+     each other instead of shimmering at the edges */
+  transform-style: flat;
+}
+
+/* Base state = "can pick it, not picking it". The other two states
+   override the three colour properties and nothing else. */
+.subdivision-item {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: calc(280 * var(--u));
+  height: 88%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--card-idle-line);
+  border-radius: calc(16 * var(--u));
+  background: var(--card-idle-bg);
+  text-decoration: none;
+  overflow: hidden;
+  transform-origin: center center;
+  /* JS writes transform / opacity / z-index; everything eases from here */
+  transform: translate(-50%, -50%);
+  transition: transform var(--carousel-duration) var(--carousel-ease),
+              opacity var(--carousel-duration) var(--carousel-ease),
+              border-color 0.4s ease,
+              background 0.4s ease,
+              box-shadow 0.4s ease;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+}
+
+/* Freeze a card and its title together mid-teleport. An inline
+   `transition: none` reaches only the card, leaving the title
+   animating through the jump. */
+.subdivision-item.no-anim,
+.subdivision-item.no-anim .subdivision-name {
+  transition: none;
+}
+
+.subdivision-item .subdivision-group-label {
+  position: absolute;
+  top: calc(22 * var(--u));
+  left: calc(14 * var(--u));
+  right: calc(14 * var(--u));
+  font-family: 'Oswald', sans-serif;
+  font-weight: 500;
+  font-size: calc(10.5 * var(--u));
+  letter-spacing: calc(1.5 * var(--u));
+  text-transform: uppercase;
+  color: var(--colour-tertiary);
+  opacity: 0.5;
+  transition: color 0.45s ease, opacity 0.45s ease;
+}
+
+.subdivision-item .subdivision-name {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: calc(228 * var(--u));
+  font-family: 'Oswald', sans-serif;
+  font-weight: 600;
+  /* Authored at the CENTRED size and scaled DOWN for cards behind,
+     never up. Scaling up leaves the layout box at its original width
+     while painting it larger, so a long title overflowed the card and
+     got clipped by `overflow: hidden` — the missing first letter.
+     Scaling down cannot overflow, and line breaks are measured once,
+     at the size the centred card actually reads at. */
+  font-size: calc(27 * var(--u));
+  line-height: 1.25;
+  letter-spacing: calc(2.5 * var(--u));
+  text-transform: uppercase;
+  text-align: center;
+  text-wrap: balance;
+  color: var(--card-idle-text);
+  /* names read upright on every card — no rotation, centred or not.
+     Transform rather than font-size: no per-frame text relayout, no
+     re-wrapping mid-animation, same easing as the card. */
+  transform: translate(-50%, -50%) scale(0.7);
+  transform-origin: center center;
+  will-change: transform;
+  transition: transform var(--carousel-duration) var(--carousel-ease),
+              color 0.5s ease,
+              opacity 0.5s ease;
+}
+
+/* --- state 3: the centred card ------------------------------------ */
+
+.subdivision-item.is-centre.active {
+  background: var(--card-centre-bg);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent),
+              0 calc(18 * var(--u)) calc(50 * var(--u)) calc(-22 * var(--u))
+                color-mix(in srgb, var(--accent) 70%, transparent);
+}
+
+.subdivision-item.is-centre .subdivision-name {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.subdivision-item.is-centre.active .subdivision-name {
+  color: var(--accent);
+}
+
+.subdivision-item.is-centre.active .subdivision-group-label {
+  color: var(--accent);
+  opacity: 0.85;
+}
+
+.subdivision-item .subdivision-hint {
+  position: absolute;
+  bottom: calc(20 * var(--u));
+  left: 0;
+  right: 0;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 500;
+  font-size: calc(10.5 * var(--u));
+  letter-spacing: calc(2 * var(--u));
+  text-transform: uppercase;
+  color: var(--colour-tertiary);
+  opacity: 0;
+  transform: translateY(calc(6 * var(--u)));
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  pointer-events: none;
+}
+
+.subdivision-item.is-centre.active .subdivision-hint {
+  opacity: 0.7;
+  transform: translateY(0);
+}
+
+.subdivision-item.is-centre.active:hover,
+.subdivision-item.is-centre.active:focus-visible {
+  background: var(--card-centre-hover-bg);
+}
+
+/* --- state 1: cards outside the chosen division --------------------
+   One flat colour, whatever they're doing. They can't be picked, so
+   they never change appearance — no hover, no centring, nothing that
+   would suggest otherwise. */
+
+.subdivision-item.muted {
+  background: var(--card-locked-bg);
+  border-color: var(--card-locked-line);
+  cursor: default;
+}
+
+.subdivision-item.muted .subdivision-name {
+  color: var(--card-locked-text);
+}
+
+.subdivision-item.muted .subdivision-group-label {
+  color: var(--card-locked-text);
+  opacity: 0.6;
+}
+
+/* --- arrows ------------------------------------------------------- */
+
+.carousel-arrow {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(48 * var(--u));
+  height: calc(48 * var(--u));
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--colour-tertiary);
+  cursor: pointer;
+  transition: color 0.3s ease, transform 0.3s ease, opacity 0.3s ease;
+}
+
+.carousel-arrow svg {
+  width: calc(26 * var(--u));
+  height: calc(26 * var(--u));
+}
+
+.carousel-arrow:hover:not(:disabled),
+.carousel-arrow:focus-visible:not(:disabled) {
+  color: var(--colour-text);
+}
+
+.carousel-arrow-left:hover:not(:disabled) {
+  transform: translateX(calc(-4 * var(--u)));
+}
+
+.carousel-arrow-right:hover:not(:disabled) {
+  transform: translateX(calc(4 * var(--u)));
+}
+
+.carousel-arrow:focus-visible {
+  outline: 1px solid var(--colour-tertiary);
+  outline-offset: calc(6 * var(--u));
+  border-radius: calc(4 * var(--u));
+}
+
+.carousel-arrow:disabled {
+  opacity: 0.15;
+  cursor: default;
+  transform: none;
+}
+
+/* --- drag state ---------------------------------------------------
+   Transitions are off while a finger is down: JS drives every frame
+   directly, so the ring tracks the cursor with no lag behind it. */
+
+.subdivision-track-viewport.is-dragging {
+  cursor: grabbing;
+}
+
+.subdivision-track-viewport.is-dragging .subdivision-item,
+.subdivision-track-viewport.is-dragging .subdivision-name {
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --carousel-duration: 0.01ms;
+  }
+
+  .subdivision-item,
+  .subdivision-item .subdivision-name {
+    transition-duration: 0.01ms;
+  }
+}

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PoliceMP</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/play.css">
+</head>
+<body>
+
+  <video class="bg-video" autoplay muted loop playsinline>
+    <source src="src/source.webm" type="video/webm">
+  </video>
+  <div class="bg-overlay"></div>
+
+  <div class="screen" id="main-menu">
+    <div class="corner-marks">
+      <span class="tl"></span>
+      <span class="br"></span>
+    </div>
+
+    <div class="brand">
+      <div class="brand-title">PoliceMP</div>
+    </div>
+
+    <div class="menu-divider"></div>
+
+    <nav class="menu">
+      <div class="menu-primary">
+        <a href="#" id="play-btn"><span>Play</span></a>
+        <a href=""><span>Create a Training Room</span></a>
+        <a href=""><span>Join a Training Room</span></a>
+        <a href=""><span>Options</span></a>
+        <a href=""><span>Exit Game</span></a>
+      </div>
+    </nav>
+  </div>
+
+  <div class="screen" id="role-select" hidden>
+    <div class="corner-marks">
+      <span class="tl"></span>
+      <span class="br"></span>
+    </div>
+
+    <a href="#" class="back-btn" id="role-back-btn">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+      Back
+    </a>
+
+    <div class="brand">
+      <div class="brand-title">Select your tree</div>
+    </div>
+
+    <div class="role-list-wrap">
+      <div class="role-list">
+        <a href="" class="role-item" data-role="police">
+        <span class="role-lock">
+          <svg class="role-lock-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="1.5"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+          <span class="role-lock-text">Locked</span>
+        </span>
+        <span class="role-name">Police</span>
+      </a>
+      <a href="" class="role-item" data-role="ambulance">
+        <span class="role-lock">
+          <svg class="role-lock-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="1.5"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+          <span class="role-lock-text">Locked</span>
+        </span>
+        <span class="role-name">London Ambulance Service</span>
+      </a>
+      <a href="" class="role-item" data-role="fire">
+        <span class="role-lock">
+          <svg class="role-lock-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="1.5"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+          <span class="role-lock-text">Locked</span>
+        </span>
+        <span class="role-name">London Fire Brigade</span>
+      </a>
+      <a href="" class="role-item" data-role="auxiliary">
+        <span class="role-lock">
+          <svg class="role-lock-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="1.5"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+          <span class="role-lock-text">Locked</span>
+        </span>
+        <span class="role-name">Auxiliary ops</span>
+      </a>
+      <a href="" class="role-item" data-role="civilian">
+        <span class="role-lock">
+          <svg class="role-lock-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="1.5"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+          <span class="role-lock-text">Locked</span>
+        </span>
+        <span class="role-name">Civilian roleplay</span>
+      </a>
+      <a href="" class="role-item" data-role="flight">
+        <span class="role-lock">
+          <svg class="role-lock-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="1.5"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+          <span class="role-lock-text">Locked</span>
+        </span>
+        <span class="role-name">Flight operations</span>
+      </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="screen" id="sub-role-select" hidden>
+    <div class="corner-marks">
+      <span class="tl"></span>
+      <span class="br"></span>
+    </div>
+
+    <a href="#" class="back-btn" id="sub-role-back-btn">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+      Back
+    </a>
+
+    <div class="brand">
+      <div class="brand-title" id="sub-role-title">Select your division</div>
+    </div>
+
+    <div class="sub-role-list-wrap">
+      <div class="sub-role-list" id="sub-role-list"></div>
+    </div>
+  </div>
+
+  <div class="screen" id="subdivision-select" hidden>
+    <div class="corner-marks">
+      <span class="tl"></span>
+      <span class="br"></span>
+    </div>
+
+    <a href="#" class="back-btn" id="subdivision-back-btn">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+      Back
+    </a>
+
+    <div class="brand">
+      <div class="brand-title" id="subdivision-title">Select your subdivision</div>
+    </div>
+
+    <div class="subdivision-carousel-wrap">
+      <button type="button" class="carousel-arrow carousel-arrow-left" id="subdivision-arrow-left" aria-label="Scroll left">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+      </button>
+
+      <div class="subdivision-track-viewport">
+        <div class="subdivision-track" id="subdivision-track"></div>
+      </div>
+
+      <button type="button" class="carousel-arrow carousel-arrow-right" id="subdivision-arrow-right" aria-label="Scroll right">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"></path></svg>
+      </button>
+    </div>
+  </div>
+
+  <script src="js/playerselect.js"></script>
+</body>
+</html>
