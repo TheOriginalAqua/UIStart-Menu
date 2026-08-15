@@ -1,6 +1,5 @@
 const unlockedRoles = ["police", "ambulance", "fire", "auxiliary", "flight", "civilian"];
 
-
 const roleData = window.roleData || {};
 const subdivisionData = window.subdivisionData || {};
 
@@ -373,6 +372,19 @@ function showSubdivisionSelect(role, activeSubrole) {
     ordered = cards.slice(shift).concat(cards.slice(0, shift));
   }
 
+  // If we have enough unique items to fill the visible window, repeat the
+  // sequence so the carousel can wrap infinitely while ensuring the same
+  // subdivision never appears twice inside the visible window. Duplicates
+  // will be spaced by the full unique set length which is >= visible window.
+  const uniqueCount = ordered.length;
+  const minVisible = CAROUSEL.visibleRings * 2 + 1;
+  if (uniqueCount >= minVisible) {
+    const repeats = Math.ceil((minVisible * 3) / uniqueCount);
+    const expanded = [];
+    for (let r = 0; r < repeats; r++) expanded.push(...ordered);
+    ordered = expanded;
+  }
+
   ordered.forEach(({ subrole, subdivision, isActiveGroup }) => {
     const link = document.createElement("a");
     link.href = "#";
@@ -398,10 +410,6 @@ function showSubdivisionSelect(role, activeSubrole) {
     link.appendChild(hint);
 
     const index = carouselItems.length;
-    if (isActiveGroup) {
-      if (carouselMin === null) carouselMin = index;
-      carouselMax = index;
-    }
 
     link.addEventListener("click", (event) => {
       event.preventDefault();
@@ -419,9 +427,42 @@ function showSubdivisionSelect(role, activeSubrole) {
     subdivisionTrack.appendChild(link);
   });
 
-  if (carouselMin === null) {
+  // Determine the contiguous active block (items matching activeSubrole)
+  // and restrict scrolling to that block. If multiple repeats exist, pick
+  // the block closest to the visual centre so the user cannot scroll to
+  // subdivisions outside their active division.
+  const totalItems = carouselItems.length;
+  let activeBlocks = [];
+  let inBlock = false;
+  let blockStart = 0;
+  for (let i = 0; i < totalItems; i++) {
+    const isActive = carouselItems[i].dataset.subrole === activeSubrole;
+    if (isActive && !inBlock) {
+      inBlock = true;
+      blockStart = i;
+    } else if (!isActive && inBlock) {
+      inBlock = false;
+      activeBlocks.push({ start: blockStart, end: i - 1 });
+    }
+  }
+  if (inBlock) activeBlocks.push({ start: blockStart, end: totalItems - 1 });
+
+  if (activeBlocks.length) {
+    const centre = Math.floor((totalItems - 1) / 2);
+    let best = activeBlocks[0];
+    let bestDist = Math.abs((best.start + best.end) / 2 - centre);
+    for (let b = 1; b < activeBlocks.length; b++) {
+      const dist = Math.abs((activeBlocks[b].start + activeBlocks[b].end) / 2 - centre);
+      if (dist < bestDist) {
+        bestDist = dist;
+        best = activeBlocks[b];
+      }
+    }
+    carouselMin = best.start;
+    carouselMax = best.end;
+  } else {
     carouselMin = 0;
-    carouselMax = Math.max(0, carouselItems.length - 1);
+    carouselMax = Math.max(0, totalItems - 1);
   }
 
   carouselIndex = Math.floor((carouselMin + carouselMax) / 2);
