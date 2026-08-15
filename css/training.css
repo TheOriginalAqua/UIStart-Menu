@@ -1,17 +1,9 @@
-/* ------------------------------------------------------------------
-   Training rooms — create, browse, join
-   No cards on the create/code screens: the fields sit straight on the
-   background so the screens read like the rest of the menu.
-   ------------------------------------------------------------------ */
-
 :root {
-  --colour-danger: #e05a4a;
+  --colour-nook: #e05a4a;
   --colour-ok: #45b98a;
   --room-bg: #232328;
   --room-bg-hover: #26262c;
 }
-
-/* ---------- Shared screen shell ---------- */
 
 #create-room,
 #join-room,
@@ -78,16 +70,11 @@
   opacity: 0;
 }
 
-/* The room list runs top-down rather than sitting centred. */
 #join-room .stage {
   align-items: flex-start;
   padding-top: calc(80 * var(--u));
 }
 
-
-/* ---------- Screen transitions, minus the back button ----------
-   The screen itself no longer fades; its contents do. That keeps the
-   back button at full opacity while everything else moves. */
 
 #create-room,
 #join-room,
@@ -116,7 +103,6 @@
   transform: translateY(calc(16 * var(--u)));
 }
 
-/* ---------- Steps ---------- */
 
 .step {
   width: calc(900 * var(--u));
@@ -142,7 +128,6 @@
   transform: translateY(calc(14 * var(--u)));
 }
 
-/* ---------- Bare fields ---------- */
 
 .field-label {
   display: block;
@@ -185,7 +170,7 @@
 }
 
 .field-line.is-invalid {
-  border-bottom-color: var(--colour-danger);
+  border-bottom-color: var(--colour-nook);
 }
 
 .field-hint {
@@ -198,7 +183,6 @@
   opacity: 0.55;
 }
 
-/* ---------- Actions ---------- */
 
 .actions {
   display: flex;
@@ -236,7 +220,6 @@
   outline: none;
 }
 
-/* Same fade-back as the main menu: the one you are not on drops away. */
 .actions:has(.action:hover) .action:not(:hover) {
   color: var(--colour-tertiary);
   opacity: 0.45;
@@ -249,7 +232,6 @@
   transform: none;
 }
 
-/* ---------- Generated code ---------- */
 
 .code-room-name {
   font-family: 'Oswald', sans-serif;
@@ -299,7 +281,6 @@
   opacity: 0.6;
 }
 
-/* ---------- Code entry ---------- */
 
 .code-input {
   width: 100%;
@@ -328,7 +309,7 @@
 }
 
 .code-input.is-invalid {
-  border-bottom-color: var(--colour-danger);
+  border-bottom-color: var(--colour-nook);
 }
 
 .step.shake {
@@ -342,7 +323,6 @@
   70% { transform: translateX(calc(-3 * var(--u))); }
 }
 
-/* ---------- Messages ---------- */
 
 .form-message {
   min-height: calc(18 * var(--u));
@@ -352,7 +332,7 @@
   font-size: calc(12 * var(--u));
   letter-spacing: calc(2 * var(--u));
   text-transform: uppercase;
-  color: var(--colour-danger);
+  color: var(--colour-nook);
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -365,7 +345,6 @@
   color: var(--colour-ok);
 }
 
-/* ---------- Room list ---------- */
 
 .room-list {
   display: flex;
@@ -489,7 +468,6 @@
   opacity: 0.6;
 }
 
-/* ---------- Corner action ---------- */
 
 .corner-action {
   position: absolute;
@@ -506,7 +484,6 @@
   color: var(--colour-text);
 }
 
-/* ---------- Small screens ---------- */
 
 @media (max-width: 900px) {
   .code-digit {

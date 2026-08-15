@@ -1,22 +1,9 @@
-/* ------------------------------------------------------------------
-   Training rooms
-
-   Create a room with a name — the game generates a 5-digit join code.
-   Anyone can open the room from the list and enter that code to join.
-
-   Rooms live in localStorage under TRAINING_ROOMS_KEY so the list
-   survives a refresh. When a backend exists, swap loadRooms/saveRooms
-   for fetch calls and check the code server-side.
-   ------------------------------------------------------------------ */
-
 (function () {
   "use strict";
 
   const TRAINING_ROOMS_KEY = "policemp.trainingRooms";
   const CODE_LENGTH = 5;
   const MAX_ROOMS = 7;
-
-  /* ---------- Elements ---------- */
 
   const $ = (id) => document.getElementById(id);
 
@@ -26,10 +13,6 @@
   const codeScreen = $("room-code");
 
   if (!createScreen || !joinScreen || !codeScreen) {
-    console.warn(
-      "[trainingrooms] Missing markup — main.html needs the #create-room, " +
-        "#join-room and #room-code screens."
-    );
     return;
   }
 
@@ -52,8 +35,6 @@
   const joinMessage = $("room-code-message");
   const joinBtn = $("join-code-btn");
 
-  /* ---------- Screen + step transitions ---------- */
-
   function swapScreens(from, to) {
     if (typeof window.transitionScreens === "function") {
       window.transitionScreens(from, to);
@@ -63,8 +44,6 @@
     to.hidden = false;
   }
 
-  // Swaps the body of two screens while the back button and heading stay
-  // put — used between create and join so nothing slides around.
   function swapStages(from, to) {
     const fromStage = from.querySelector(".stage");
     const toStage = to.querySelector(".stage");
@@ -100,9 +79,7 @@
     }, 380);
   }
 
-  /* ---------- Storage ---------- */
-
-  let memoryRooms = null; // used when localStorage is unavailable
+  let memoryRooms = null;
 
   function loadRooms() {
     if (memoryRooms) return memoryRooms.slice();
@@ -135,10 +112,8 @@
       const code = String(floor + Math.floor(Math.random() * span));
       if (!taken.has(code)) return code;
     }
-    return String(floor + rooms.length); // every code taken is not realistic
+    return String(floor + rooms.length);
   }
-
-  /* ---------- Messages ---------- */
 
   function showMessage(element, text, ok) {
     element.textContent = text;
@@ -165,8 +140,6 @@
       "'": "&#39;",
     }[character]));
   }
-
-  /* ---------- Create ---------- */
 
   function resetCreate() {
     nameInput.value = "";
@@ -205,10 +178,7 @@
     }
 
     if (rooms.length >= MAX_ROOMS) {
-      showMessage(
-        createMessage,
-        `Maximum room capacity met, wait till a room is closed before creating another.`
-      );
+      showMessage(createMessage, `Maximum room capacity met, wait till a room is closed before creating another.`);
       return;
     }
 
@@ -268,13 +238,10 @@
         document.execCommand("copy");
         done();
       } catch (error) {
-        /* clipboard unavailable — the code is on screen anyway */
       }
       document.body.removeChild(scratch);
     });
   }
-
-  /* ---------- Room list ---------- */
 
   const closeIcon = `
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -282,8 +249,6 @@
       <path d="M18 6L6 18M6 6l12 12"></path>
     </svg>`;
 
-  // Whoever created the room. Swap window.playerName for the real account
-  // name once accounts exist.
   function hostName(room) {
     return (room && room.host) || window.playerName || "User";
   }
@@ -292,7 +257,6 @@
     const rooms = loadRooms().sort((a, b) => b.created - a.created);
     roomListWrap.innerHTML = "";
 
-    // Optional — the join screen works with or without a count line.
     if (roomCount) {
       roomCount.textContent = rooms.length
         ? `${rooms.length} room${rooms.length === 1 ? "" : "s"} open`
@@ -363,8 +327,6 @@
     roomListWrap.appendChild(list);
   }
 
-  /* ---------- Join ---------- */
-
   let pendingRoom = null;
 
   function roomCodeMatches(room, attempt) {
@@ -390,7 +352,6 @@
     clearMessage(joinMessage);
     joinBtn.disabled = digits.length !== CODE_LENGTH;
 
-    // Full code typed — try it without making them reach for the button.
     if (digits.length === CODE_LENGTH) {
       window.setTimeout(() => {
         if (joinInput.value.length === CODE_LENGTH) attemptJoin();
@@ -422,15 +383,12 @@
     window.setTimeout(() => enterTrainingRoom(pendingRoom), 480);
   }
 
-  // Hook this up to whatever loads the room once the game side exists.
   function enterTrainingRoom(room) {
     console.log(`Joining training room "${room.name}" (code ${room.code})`);
     window.dispatchEvent(
       new CustomEvent("trainingroom:joined", { detail: { room } })
     );
   }
-
-  /* ---------- Navigation ---------- */
 
   function openCreate(from) {
     resetCreate();

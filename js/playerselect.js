@@ -372,10 +372,6 @@ function showSubdivisionSelect(role, activeSubrole) {
     ordered = cards.slice(shift).concat(cards.slice(0, shift));
   }
 
-  // If we have enough unique items to fill the visible window, repeat the
-  // sequence so the carousel can wrap infinitely while ensuring the same
-  // subdivision never appears twice inside the visible window. Duplicates
-  // will be spaced by the full unique set length which is >= visible window.
   const uniqueCount = ordered.length;
   const minVisible = CAROUSEL.visibleRings * 2 + 1;
   if (uniqueCount >= minVisible) {
@@ -427,10 +423,6 @@ function showSubdivisionSelect(role, activeSubrole) {
     subdivisionTrack.appendChild(link);
   });
 
-  // Determine the contiguous active block (items matching activeSubrole)
-  // and restrict scrolling to that block. If multiple repeats exist, pick
-  // the block closest to the visual centre so the user cannot scroll to
-  // subdivisions outside their active division.
   const totalItems = carouselItems.length;
   let activeBlocks = [];
   let inBlock = false;

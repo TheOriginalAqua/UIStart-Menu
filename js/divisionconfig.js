@@ -76,7 +76,8 @@ window.subdivisionData = {
       "Counter Terrorism Specialist Firearms Officer"
     ],
     "Marine Police Unit": [
-      "Marine Police Officer"
+      "Marine Police Officer",
+      "Ports Police"
     ]
   },
   ambulance: {
