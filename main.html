@@ -5,6 +5,7 @@
   <title>PoliceMP</title>
   <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/play.css">
+  <link rel="stylesheet" href="css/training.css">
 </head>
 <body>
 
@@ -28,8 +29,8 @@
     <nav class="menu">
       <div class="menu-primary">
         <a href="#" id="play-btn"><span>Play</span></a>
-        <a href=""><span>Create a Training Room</span></a>
-        <a href=""><span>Join a Training Room</span></a>
+        <a href="#" id="create-room-btn"><span>Create a Training Room</span></a>
+        <a href="#" id="join-room-btn"><span>Join a Training Room</span></a>
         <a href=""><span>Options</span></a>
         <a href=""><span>Exit Game</span></a>
       </div>
@@ -149,7 +150,96 @@
     </div>
   </div>
 
+
+  <div class="screen" id="create-room" hidden>
+    <div class="corner-marks">
+      <span class="tl"></span>
+      <span class="br"></span>
+    </div>
+
+    <a href="#" class="back-btn" id="create-room-back-btn">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+      Back
+    </a>
+
+    <div class="brand">
+      <div class="brand-title" id="create-room-title">Create a training room</div>
+      <div class="screen-sub" id="create-room-sub">Name the room and generate a join code</div>
+    </div>
+
+    <div class="stage">
+      <form class="step" id="create-step-name" novalidate>
+        <label class="field-label" for="room-name-input">Room name</label>
+        <input class="field-line" id="room-name-input" type="text" maxlength="40"
+               autocomplete="off" spellcheck="false" placeholder="Enter your Training Room">
+        <p class="form-message" id="create-room-message" role="status"></p>
+        <div class="actions">
+          <button type="submit" class="action">Create room</button>
+          <button type="button" class="action action-quiet" id="create-room-cancel">Cancel</button>
+        </div>
+      </form>
+
+      <div class="step" id="create-step-code" hidden>
+        <div class="code-room-name" id="created-room-name"></div>
+        <div class="code-display" id="created-code"></div>
+        <p class="code-note">Trainees enter this code to join the Training Room.</p>
+        <div class="actions">
+          <button type="button" class="action" id="copy-code-btn">Copy code</button>
+          <button type="button" class="action action-quiet" id="open-rooms-btn">Open room list</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="screen" id="join-room" hidden>
+    <div class="corner-marks">
+      <span class="tl"></span>
+      <span class="br"></span>
+    </div>
+
+    <a href="#" class="back-btn" id="join-room-back-btn">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+      Back
+    </a>
+
+    <div class="brand">
+      <div class="brand-title">Join a training room</div>
+    </div>
+
+    <div class="stage" id="room-list-wrap"></div>
+  </div>
+
+  <div class="screen" id="room-code" hidden>
+    <div class="corner-marks">
+      <span class="tl"></span>
+      <span class="br"></span>
+    </div>
+
+    <a href="#" class="back-btn" id="room-code-back-btn">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg>
+      Back
+    </a>
+
+    <div class="brand">
+      <div class="brand-title">Enter code</div>
+      <div class="screen-sub" id="join-room-name"></div>
+    </div>
+
+    <div class="stage">
+      <form class="step" id="room-code-step" novalidate>
+        <label class="field-label" for="join-code-input">5-digit room code</label>
+        <input class="code-input" id="join-code-input" type="text" inputmode="numeric"
+               maxlength="5" autocomplete="off" placeholder="•••••">
+        <p class="form-message" id="room-code-message" role="status"></p>
+        <div class="actions">
+          <button type="submit" class="action" id="join-code-btn" disabled>Join room</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script src="js/divisionconfig.js"></script>
   <script src="js/playerselect.js"></script>
+  <script src="js/trainingroom.js"></script>
 </body>
 </html>

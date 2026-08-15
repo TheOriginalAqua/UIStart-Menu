@@ -1,0 +1,542 @@
+/* ------------------------------------------------------------------
+   Training rooms — create, browse, join
+   No cards on the create/code screens: the fields sit straight on the
+   background so the screens read like the rest of the menu.
+   ------------------------------------------------------------------ */
+
+:root {
+  --colour-danger: #e05a4a;
+  --colour-ok: #45b98a;
+  --room-bg: #232328;
+  --room-bg-hover: #26262c;
+}
+
+/* ---------- Shared screen shell ---------- */
+
+#create-room,
+#join-room,
+#room-code {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  height: 100vh;
+  padding-top: calc(58 * var(--u));
+  text-align: center;
+}
+
+#create-room[hidden],
+#join-room[hidden],
+#room-code[hidden] {
+  display: none;
+}
+
+#create-room .corner-marks .tl,
+#join-room .corner-marks .tl,
+#room-code .corner-marks .tl {
+  display: none;
+}
+
+#create-room .brand,
+#join-room .brand,
+#room-code .brand {
+  flex: 0 0 auto;
+  margin-bottom: 0;
+}
+
+#create-room .brand-title,
+#join-room .brand-title,
+#room-code .brand-title {
+  font-size: calc(64 * var(--u));
+  transition: opacity 0.35s ease;
+}
+
+.screen-sub {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 400;
+  font-size: calc(13.5 * var(--u));
+  letter-spacing: calc(2.5 * var(--u));
+  text-transform: uppercase;
+  color: var(--colour-tertiary);
+  opacity: 0.6;
+  margin-top: calc(12 * var(--u));
+  transition: opacity 0.35s ease;
+}
+
+.stage {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: calc(20 * var(--u)) 0 calc(60 * var(--u));
+  min-height: 0;
+  transition: opacity 0.3s ease;
+}
+
+.stage.fade-hidden {
+  opacity: 0;
+}
+
+/* The room list runs top-down rather than sitting centred. */
+#join-room .stage {
+  align-items: flex-start;
+  padding-top: calc(80 * var(--u));
+}
+
+
+/* ---------- Screen transitions, minus the back button ----------
+   The screen itself no longer fades; its contents do. That keeps the
+   back button at full opacity while everything else moves. */
+
+#create-room,
+#join-room,
+#room-code {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+#create-room > *:not(.back-btn),
+#join-room > *:not(.back-btn),
+#room-code > *:not(.back-btn) {
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+#create-room.screen-exit > *:not(.back-btn),
+#join-room.screen-exit > *:not(.back-btn),
+#room-code.screen-exit > *:not(.back-btn) {
+  opacity: 0;
+  transform: translateY(calc(-16 * var(--u)));
+}
+
+#create-room.screen-enter > *:not(.back-btn),
+#join-room.screen-enter > *:not(.back-btn),
+#room-code.screen-enter > *:not(.back-btn) {
+  opacity: 0;
+  transform: translateY(calc(16 * var(--u)));
+}
+
+/* ---------- Steps ---------- */
+
+.step {
+  width: calc(900 * var(--u));
+  max-width: 90vw;
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.4s ease,
+    transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.step[hidden] {
+  display: none;
+}
+
+.step.is-out {
+  opacity: 0;
+  transform: translateY(calc(-10 * var(--u)));
+  pointer-events: none;
+}
+
+.step.is-in {
+  opacity: 0;
+  transform: translateY(calc(14 * var(--u)));
+}
+
+/* ---------- Bare fields ---------- */
+
+.field-label {
+  display: block;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 500;
+  font-size: calc(24 * var(--u));
+  letter-spacing: calc(4 * var(--u));
+  text-transform: uppercase;
+  color: var(--colour-text);
+  opacity: 1;
+  margin-bottom: calc(24 * var(--u));
+}
+
+.field-line {
+  display: block;
+  width: calc(820 * var(--u));
+  max-width: 100%;
+  margin: 0 auto;
+  padding: calc(14 * var(--u)) 0 calc(24 * var(--u));
+  border: none;
+  border-bottom: 1px solid var(--colour-line);
+  background: none;
+  color: var(--colour-text);
+  font-family: 'Oswald', sans-serif;
+  font-weight: 500;
+  font-size: calc(46 * var(--u));
+  letter-spacing: calc(3 * var(--u));
+  text-align: center;
+  caret-color: var(--colour-tertiary);
+  cursor: text;
+  outline: none;
+}
+
+.field-line::placeholder {
+  color: var(--colour-tertiary);
+  opacity: 0.35;
+  font-weight: 400;
+  font-size: calc(30 * var(--u));
+  letter-spacing: calc(2.5 * var(--u));
+}
+
+.field-line.is-invalid {
+  border-bottom-color: var(--colour-danger);
+}
+
+.field-hint {
+  margin-top: calc(14 * var(--u));
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 500;
+  font-size: calc(16 * var(--u));
+  letter-spacing: calc(0.5 * var(--u));
+  color: var(--colour-tertiary);
+  opacity: 0.55;
+}
+
+/* ---------- Actions ---------- */
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(30 * var(--u));
+  margin-top: calc(40 * var(--u));
+}
+
+.action {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(8 * var(--u));
+  padding: calc(8 * var(--u)) 0;
+  border: none;
+  background: none;
+  color: var(--colour-text);
+  font-family: 'Oswald', sans-serif;
+  font-weight: 500;
+  font-size: calc(17 * var(--u));
+  letter-spacing: calc(3 * var(--u));
+  text-transform: uppercase;
+  text-decoration: none;
+  filter: none;
+  cursor: pointer;
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.35s ease,
+    color 0.35s ease,
+    filter 0.35s ease;
+}
+
+.action:hover,
+.action:focus-visible {
+  transform: translateY(calc(-2 * var(--u)));
+  outline: none;
+}
+
+/* Same fade-back as the main menu: the one you are not on drops away. */
+.actions:has(.action:hover) .action:not(:hover) {
+  color: var(--colour-tertiary);
+  opacity: 0.45;
+  filter: saturate(0.4);
+}
+
+.action:disabled {
+  opacity: 0.3;
+  cursor: default;
+  transform: none;
+}
+
+/* ---------- Generated code ---------- */
+
+.code-room-name {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 500;
+  font-size: calc(15 * var(--u));
+  letter-spacing: calc(3 * var(--u));
+  text-transform: uppercase;
+  color: var(--colour-tertiary);
+  opacity: 0.7;
+  margin-bottom: calc(26 * var(--u));
+}
+
+.code-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(14 * var(--u));
+}
+
+.code-digit {
+  width: calc(74 * var(--u));
+  padding: calc(16 * var(--u)) 0;
+  border-bottom: 1px solid var(--colour-line);
+  font-family: 'Oswald', sans-serif;
+  font-weight: 600;
+  font-size: calc(56 * var(--u));
+  line-height: 1;
+  color: var(--colour-text);
+  opacity: 0;
+  transform: translateY(calc(10 * var(--u)));
+  animation: digit-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes digit-in {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.code-note {
+  margin-top: calc(28 * var(--u));
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 500;
+  font-size: calc(17 * var(--u));
+  color: var(--colour-tertiary);
+  opacity: 0.6;
+}
+
+/* ---------- Code entry ---------- */
+
+.code-input {
+  width: 100%;
+  padding: calc(10 * var(--u)) 0 calc(18 * var(--u));
+  border: none;
+  border-bottom: 1px solid var(--colour-line);
+  background: none;
+  color: var(--colour-text);
+  font-family: 'Oswald', sans-serif;
+  font-weight: 600;
+  font-size: calc(56 * var(--u));
+  letter-spacing: calc(24 * var(--u));
+  text-indent: calc(24 * var(--u));
+  text-align: center;
+  outline: none;
+  transition: border-color 0.4s ease;
+}
+
+.code-input::placeholder {
+  color: var(--colour-tertiary);
+  opacity: 0.2;
+}
+
+.code-input:focus {
+  border-bottom-color: var(--colour-text);
+}
+
+.code-input.is-invalid {
+  border-bottom-color: var(--colour-danger);
+}
+
+.step.shake {
+  animation: step-shake 0.4s ease;
+}
+
+@keyframes step-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(calc(-7 * var(--u))); }
+  45% { transform: translateX(calc(6 * var(--u))); }
+  70% { transform: translateX(calc(-3 * var(--u))); }
+}
+
+/* ---------- Messages ---------- */
+
+.form-message {
+  min-height: calc(18 * var(--u));
+  margin-top: calc(22 * var(--u));
+  font-family: 'Oswald', sans-serif;
+  font-weight: 500;
+  font-size: calc(12 * var(--u));
+  letter-spacing: calc(2 * var(--u));
+  text-transform: uppercase;
+  color: var(--colour-danger);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.form-message.is-shown {
+  opacity: 1;
+}
+
+.form-message.is-ok {
+  color: var(--colour-ok);
+}
+
+/* ---------- Room list ---------- */
+
+.room-list {
+  display: flex;
+  flex-direction: column;
+  gap: calc(26 * var(--u));
+  width: calc(1000 * var(--u));
+  max-width: 92vw;
+  max-height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  /* Top padding gives the first row somewhere to lift into instead of
+     being clipped by the scroll container. */
+  padding: calc(12 * var(--u)) calc(6 * var(--u)) calc(6 * var(--u));
+  scrollbar-width: thin;
+}
+
+.room-item {
+  display: flex;
+  align-items: center;
+  gap: calc(22 * var(--u));
+  width: 100%;
+  min-height: calc(120 * var(--u));
+  padding: calc(30 * var(--u)) calc(34 * var(--u));
+  border: 1px solid var(--colour-line);
+  border-radius: calc(16 * var(--u));
+  background: var(--room-bg);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.4s ease, background 0.4s ease,
+    transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Lifts upward only — a sideways or downward shift would grow the scroll
+   area and pop a scrollbar in. */
+.room-item:hover,
+.room-item:focus-visible {
+  border-color: var(--colour-line);
+  background: var(--room-bg-hover);
+  transform: translateY(calc(-4 * var(--u)));
+  outline: none;
+}
+
+.room-body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.room-name {
+  display: block;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 600;
+  font-size: calc(32 * var(--u));
+  letter-spacing: calc(3 * var(--u));
+  text-transform: uppercase;
+  color: var(--colour-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.room-meta {
+  display: block;
+  margin-top: calc(9 * var(--u));
+  font-family: 'Oswald', sans-serif;
+  font-weight: 500;
+  font-size: calc(14 * var(--u));
+  letter-spacing: calc(1.8 * var(--u));
+  text-transform: uppercase;
+  color: var(--colour-tertiary);
+  opacity: 0.7;
+}
+
+.room-delete {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(38 * var(--u));
+  height: calc(38 * var(--u));
+  border: 1px solid transparent;
+  border-radius: calc(8 * var(--u));
+  background: none;
+  color: var(--colour-tertiary);
+  cursor: pointer;
+  opacity: 0.35;
+  transition: color 0.3s ease, opacity 0.3s ease, border-color 0.3s ease;
+}
+
+.room-delete svg {
+  width: calc(17 * var(--u));
+  height: calc(17 * var(--u));
+}
+
+.room-delete:hover,
+.room-delete:focus-visible {
+  color: var(--colour-text);
+  border-color: transparent;
+  opacity: 1;
+  outline: none;
+}
+
+.room-empty {
+  text-align: center;
+}
+
+.room-empty-title {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 600;
+  font-size: calc(22 * var(--u));
+  letter-spacing: calc(3 * var(--u));
+  text-transform: uppercase;
+  color: var(--colour-text);
+}
+
+.room-empty-text {
+  margin-top: calc(12 * var(--u));
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 500;
+  font-size: calc(17 * var(--u));
+  color: var(--colour-tertiary);
+  opacity: 0.6;
+}
+
+/* ---------- Corner action ---------- */
+
+.corner-action {
+  position: absolute;
+  top: calc(43 * var(--u));
+  right: calc(77 * var(--u));
+  z-index: 2;
+  font-size: calc(13.5 * var(--u));
+  letter-spacing: calc(2 * var(--u));
+  color: var(--colour-tertiary);
+}
+
+.corner-action:hover,
+.corner-action:focus-visible {
+  color: var(--colour-text);
+}
+
+/* ---------- Small screens ---------- */
+
+@media (max-width: 900px) {
+  .code-digit {
+    width: calc(58 * var(--u));
+    font-size: calc(44 * var(--u));
+  }
+
+  .code-input {
+    font-size: calc(40 * var(--u));
+    letter-spacing: calc(16 * var(--u));
+    text-indent: calc(16 * var(--u));
+  }
+
+  .field-line {
+    font-size: calc(32 * var(--u));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .step,
+  .room-item,
+  .action {
+    transition-duration: 0.01ms;
+  }
+
+  .code-digit {
+    animation-duration: 0.01ms;
+  }
+
+  .step.shake {
+    animation: none;
+  }
+}
