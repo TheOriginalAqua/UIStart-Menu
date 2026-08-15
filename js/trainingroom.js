@@ -267,17 +267,9 @@
       const empty = document.createElement("div");
       empty.className = "room-empty";
       empty.innerHTML = `
-        <div class="room-empty-title">Nothing running yet</div>
+        <div class="room-empty-title">Nothing here yet</div>
         <p class="room-empty-text">Create a room and it appears here for anyone with its code.</p>
       `;
-
-      const create = document.createElement("button");
-      create.type = "button";
-      create.className = "action";
-      create.style.marginTop = "calc(28 * var(--u))";
-      create.textContent = "Create a room";
-      create.addEventListener("click", openCreate);
-      empty.appendChild(create);
 
       roomListWrap.appendChild(empty);
       return;

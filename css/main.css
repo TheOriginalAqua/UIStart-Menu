@@ -108,10 +108,7 @@ body {
 }
 
 .corner-marks .br {
-  bottom: calc(43 * var(--u));
-  right: calc(77 * var(--u));
-  border-left: none;
-  border-top: none;
+  display: none;
 }
 
 #role-select .corner-marks .tl,
@@ -207,4 +204,53 @@ nav.menu {
 .back-btn:focus-visible {
   color: var(--colour-text);
   transform: translateX(calc(-4 * var(--u)));
+}
+
+.music-toggle {
+  position: fixed;
+  right: calc(34 * var(--u));
+  bottom: calc(26 * var(--u));
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(28 * var(--u));
+  height: calc(28 * var(--u));
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.9);
+  padding: 0;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.music-toggle:hover,
+.music-toggle:focus-visible {
+  transform: translateY(calc(-2 * var(--u)));
+  outline: none;
+}
+
+.music-toggle[data-muted="true"] {
+  opacity: 0.7;
+}
+
+.music-icon {
+  display: block;
+  width: calc(22 * var(--u));
+  height: calc(22 * var(--u));
+  color: #fff;
+  fill: currentColor;
+}
+
+.music-icon-muted {
+  display: none;
+}
+
+.music-toggle[data-muted="true"] .music-icon-volume {
+  display: none;
+}
+
+.music-toggle[data-muted="true"] .music-icon-muted {
+  display: block;
 }

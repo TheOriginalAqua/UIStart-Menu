@@ -169,6 +169,12 @@
   letter-spacing: calc(2.5 * var(--u));
 }
 
+.field-line:focus::placeholder,
+.field-line:not(:placeholder-shown)::placeholder {
+  color: transparent;
+  opacity: 0;
+}
+
 .field-line.is-invalid {
   border-bottom-color: var(--colour-nook);
 }
